@@ -13,7 +13,7 @@ from typing import Any
 ARCHIVO_DATOS = "datos.json"
 ARCHIVO_GRAFICO = "libros_por_genero.png"
 
-CAMPOS = ["titulo", "autor", "genero", "anio", "precio", "calificacion", "paginas", "stock"]
+CAMPOS = ["título", "autor", "género", "año", "precio", "calificación", "páginas", "stock"]
 
 
 def cargar_catalogo(archivo: str) -> list[dict[str, Any]]:
@@ -65,21 +65,21 @@ def guardar_catalogo(catalogo: list[dict[str, Any]], archivo: str) -> None:
 
 def validar_libro(libro: dict[str, Any]) -> None:
     """Valida los datos de un libro y lanza ValueError si algo no es correcto."""
-    anio_actual = datetime.now().year
+    año_actual = datetime.now().year
 
-    if not str(libro["titulo"]).strip():
-        raise ValueError("El titulo no puede estar vacio.")
+    if not str(libro["título"]).strip():
+        raise ValueError("El título no puede estar vacio.")
     if not str(libro["autor"]).strip():
         raise ValueError("El autor no puede estar vacio.")
-    if not str(libro["genero"]).strip():
-        raise ValueError("El genero no puede estar vacio.")
+    if not str(libro["género"]).strip():
+        raise ValueError("El género no puede estar vacio.")
 
     try:
-        anio = int(libro["anio"])
+        año = int(libro["año"])
     except (ValueError, TypeError):
-        raise ValueError("El anio debe ser un numero entero.")
-    if anio < 1000 or anio > anio_actual:
-        raise ValueError(f"El anio debe estar entre 1000 y {anio_actual}.")
+        raise ValueError("El año debe ser un numero entero.")
+    if año < 1000 or año > año_actual:
+        raise ValueError(f"El año debe estar entre 1000 y {año_actual}.")
 
     try:
         precio = float(libro["precio"])
@@ -89,18 +89,18 @@ def validar_libro(libro: dict[str, Any]) -> None:
         raise ValueError("El precio no puede ser negativo.")
 
     try:
-        calificacion = float(libro["calificacion"])
+        calificación = float(libro["calificación"])
     except (ValueError, TypeError):
-        raise ValueError("La calificacion debe ser un numero.")
-    if not 0 <= calificacion <= 5:
-        raise ValueError("La calificacion debe estar entre 0 y 5.")
+        raise ValueError("La calificación debe ser un numero.")
+    if not 0 <= calificación <= 5:
+        raise ValueError("La calificación debe estar entre 0 y 5.")
 
     try:
-        paginas = int(libro["paginas"])
+        páginas = int(libro["páginas"])
     except (ValueError, TypeError):
-        raise ValueError("Las paginas deben ser un numero entero.")
-    if paginas <= 0:
-        raise ValueError("Las paginas deben ser un numero positivo.")
+        raise ValueError("Las páginas deben ser un numero entero.")
+    if páginas <= 0:
+        raise ValueError("Las páginas deben ser un numero positivo.")
 
     try:
         stock = int(libro["stock"])
@@ -121,13 +121,13 @@ def agregar_libro(catalogo: list[dict[str, Any]], libro: dict[str, Any]) -> None
     """Valida y agrega un libro al catalogo, asignandole un id unico."""
     libro_limpio = {
         "id": siguiente_id(catalogo),
-        "titulo": str(libro["titulo"]).strip(),
+        "título": str(libro["título"]).strip(),
         "autor": str(libro["autor"]).strip(),
-        "genero": str(libro["genero"]).strip(),
-        "anio": int(libro["anio"]),
+        "género": str(libro["género"]).strip(),
+        "año": int(libro["año"]),
         "precio": float(libro["precio"]),
-        "calificacion": float(libro["calificacion"]),
-        "paginas": int(libro["paginas"]),
+        "calificación": float(libro["calificación"]),
+        "páginas": int(libro["páginas"]),
         "stock": int(libro["stock"]),
     }
     try:
@@ -136,7 +136,7 @@ def agregar_libro(catalogo: list[dict[str, Any]], libro: dict[str, Any]) -> None
         print(f"Libro no agregado: {error}")
         return
     catalogo.append(libro_limpio)
-    print(f"Libro '{libro_limpio['titulo']}' agregado con id {libro_limpio['id']}.")
+    print(f"Libro '{libro_limpio['título']}' agregado con id {libro_limpio['id']}.")
 
 
 def eliminar_libro(catalogo: list[dict[str, Any]], id_libro: int) -> None:
@@ -144,7 +144,7 @@ def eliminar_libro(catalogo: list[dict[str, Any]], id_libro: int) -> None:
     for i, libro in enumerate(catalogo):
         if libro.get("id") == id_libro:
             eliminado = catalogo.pop(i)
-            print(f"Libro '{eliminado['titulo']}' (id {eliminado['id']}) eliminado.")
+            print(f"Libro '{eliminado['título']}' (id {eliminado['id']}) eliminado.")
             return
     print(f"No se encontro un libro con id {id_libro}.")
 
@@ -165,7 +165,7 @@ def modificar_libro(catalogo: list[dict[str, Any]], id_libro: int, campo: str, v
                 print(f"No se modifico: {error}")
                 return
             libro[campo] = valor
-            print(f"Libro '{libro['titulo']}' (id {libro['id']}) actualizado ({campo} = {valor}).")
+            print(f"Libro '{libro['título']}' (id {libro['id']}) actualizado ({campo} = {valor}).")
             return
     print(f"No se encontro un libro con id {id_libro}.")
 
@@ -178,10 +178,10 @@ def buscar_por_id(catalogo: list[dict[str, Any]], id_libro: int) -> dict[str, An
     return None
 
 
-def buscar_por_genero(catalogo: list[dict[str, Any]], genero: str) -> list[dict[str, Any]]:
-    """Devuelve los libros cuyo genero coincide (sin distinguir mayusculas)."""
-    genero = genero.strip().lower()
-    return [libro for libro in catalogo if libro["genero"].lower() == genero]
+def buscar_por_género(catalogo: list[dict[str, Any]], género: str) -> list[dict[str, Any]]:
+    """Devuelve los libros cuyo género coincide (sin distinguir mayúsculas)."""
+    género = género.strip().lower()
+    return [libro for libro in catalogo if libro["género"].lower() == género]
 
 
 def buscar_por_autor(catalogo: list[dict[str, Any]], autor: str) -> list[dict[str, Any]]:
@@ -190,9 +190,9 @@ def buscar_por_autor(catalogo: list[dict[str, Any]], autor: str) -> list[dict[st
     return [libro for libro in catalogo if autor in libro["autor"].lower()]
 
 
-def filtrar_por_anio(catalogo: list[dict[str, Any]], anio_min: int, anio_max: int) -> list[dict[str, Any]]:
-    """Devuelve los libros publicados dentro del rango de anios."""
-    return [libro for libro in catalogo if anio_min <= libro["anio"] <= anio_max]
+def filtrar_por_año(catalogo: list[dict[str, Any]], año_min: int, año_max: int) -> list[dict[str, Any]]:
+    """Devuelve los libros publicados dentro del rango de años."""
+    return [libro for libro in catalogo if año_min <= libro["año"] <= año_max]
 
 
 def calcular_indicadores(catalogo: list[dict[str, Any]]) -> dict[str, Any]:
@@ -201,21 +201,21 @@ def calcular_indicadores(catalogo: list[dict[str, Any]]) -> dict[str, Any]:
         return {}
 
     total = len(catalogo)
-    promedio_calificacion = sum(libro["calificacion"] for libro in catalogo) / total
-    promedio_anio = sum(libro["anio"] for libro in catalogo) / total
+    promedio_calificación = sum(libro["calificación"] for libro in catalogo) / total
+    promedio_año = sum(libro["año"] for libro in catalogo) / total
     valor_total_stock = sum(libro["precio"] * libro["stock"] for libro in catalogo)
-    mas_calificado = max(catalogo, key=lambda libro: libro["calificacion"])
-    libros_por_genero: dict[str, int] = {}
+    mas_calificado = max(catalogo, key=lambda libro: libro["calificación"])
+    libros_por_género: dict[str, int] = {}
     for libro in catalogo:
-        libros_por_genero[libro["genero"]] = libros_por_genero.get(libro["genero"], 0) + 1
+        libros_por_género[libro["género"]] = libros_por_género.get(libro["género"], 0) + 1
 
     return {
         "total_libros": total,
-        "promedio_calificacion": round(promedio_calificacion, 2),
-        "promedio_anio": round(promedio_anio, 1),
+        "promedio_calificación": round(promedio_calificación, 2),
+        "promedio_año": round(promedio_año, 1),
         "valor_total_stock": valor_total_stock,
-        "mas_calificado": mas_calificado["titulo"],
-        "libros_por_genero": libros_por_genero,
+        "mas_calificado": mas_calificado["título"],
+        "libros_por_género": libros_por_género,
     }
 
 
@@ -229,12 +229,12 @@ def generar_grafico(catalogo: list[dict[str, Any]], archivo_salida: str) -> None
 
     generos: dict[str, int] = {}
     for libro in catalogo:
-        generos[libro["genero"]] = generos.get(libro["genero"], 0) + 1
+        generos[libro["género"]] = generos.get(libro["género"], 0) + 1
 
     plt.figure(figsize=(8, 5))
     plt.bar(generos.keys(), generos.values(), color="steelblue")
-    plt.title("Cantidad de libros por genero")
-    plt.xlabel("Genero")
+    plt.title("Cantidad de libros por género")
+    plt.xlabel("género")
     plt.ylabel("Cantidad")
     plt.xticks(rotation=45, ha="right")
     plt.tight_layout()
@@ -248,12 +248,12 @@ def mostrar_catalogo(catalogo: list[dict[str, Any]]) -> None:
     if not catalogo:
         print("El catalogo esta vacio.")
         return
-    print(f"\n{'Id':>3} {'Titulo':<28} {'Autor':<24} {'Genero':<16} {'Anio':>5} {'Precio':>8} {'Calif.':>6} {'Stock':>5}")
+    print(f"\n{'Id':>3} {'Titulo':<28} {'Autor':<24} {'Genero':<16} {'Año':>5} {'Precio':>8} {'Calif.':>6} {'Stock':>5}")
     print("-" * 108)
     for libro in catalogo:
         print(
-            f"{libro['id']:>3} {libro['titulo']:<28} {libro['autor']:<24} {libro['genero']:<16} "
-            f"{libro['anio']:>5} {libro['precio']:>8.0f} {libro['calificacion']:>6.1f} {libro['stock']:>5}"
+            f"{libro['id']:>3} {libro['título']:<28} {libro['autor']:<24} {libro['género']:<16} "
+            f"{libro['año']:>5} {libro['precio']:>8.0f} {libro['calificación']:>6.1f} {libro['stock']:>5}"
         )
     print("-" * 108)
     print(f"Total: {len(catalogo)} libros\n")
