@@ -13,12 +13,12 @@ from funciones import (
     CAMPOS,
     agregar_libro,
     buscar_por_autor,
-    buscar_por_genero,
+    buscar_por_género,
     buscar_por_id,
     calcular_indicadores,
     cargar_catalogo,
     eliminar_libro,
-    filtrar_por_anio,
+    filtrar_por_año,
     generar_grafico,
     guardar_catalogo,
     modificar_libro,
@@ -79,20 +79,20 @@ def pedir_decimal_opcional(mensaje: str) -> float | None:
         try:
             return float(entrada)
         except ValueError:
-            print("Entrada invalida: ingrese un numero.")
+            print("Entrada invalida: ingrese un número.")
 
 
 def menu_agregar(catalogo: list) -> None:
     """Recopila los datos de un nuevo libro y lo agrega al catalogo."""
     print("\n--- Agregar libro ---")
     libro = {
-        "titulo": input("Titulo: "),
+        "título": input("Título: "),
         "autor": input("Autor: "),
-        "genero": input("Genero: "),
-        "anio": pedir_entero("Anio de publicacion: "),
+        "género": input("Género: "),
+        "año": pedir_entero("Año de publicación: "),
         "precio": pedir_decimal("Precio: "),
-        "calificacion": pedir_decimal("Calificacion (0 a 5): "),
-        "paginas": pedir_entero("Cantidad de paginas: "),
+        "calificación": pedir_decimal("Calificación (0 a 5): "),
+        "páginas": pedir_entero("Cantidad de páginas: "),
         "stock": pedir_entero("Stock: "),
     }
     agregar_libro(catalogo, libro)
@@ -102,32 +102,32 @@ def menu_indicadores(catalogo: list) -> None:
     """Muestra los indicadores calculados sobre el catalogo."""
     indicadores = calcular_indicadores(catalogo)
     if not indicadores:
-        print("El catalogo esta vacio, no hay indicadores para calcular.")
+        print("El catalogo esta vacío, no hay indicadores para calcular.")
         return
     print("\n--- Indicadores ---")
     print(f"Total de libros: {indicadores['total_libros']}")
-    print(f"Calificacion promedio: {indicadores['promedio_calificacion']}")
-    print(f"Anio promedio de publicacion: {indicadores['promedio_anio']}")
+    print(f"Calificación promedio: {indicadores['promedio_calificación']}")
+    print(f"Año promedio de publicación: {indicadores['promedio_año']}")
     print(f"Valor total del stock: ${indicadores['valor_total_stock']:,.0f}")
     print(f"Libro mejor calificado: {indicadores['mas_calificado']}")
-    print("Libros por genero:")
-    for genero, cantidad in indicadores["libros_por_genero"].items():
-        print(f"  - {genero}: {cantidad}")
+    print("Libros por género:")
+    for género, cantidad in indicadores["libros_por_género"].items():
+        print(f"  - {género}: {cantidad}")
 
 
 def menu_eliminar(catalogo: list) -> None:
     """Pide un id y elimina el libro correspondiente, mostrando cual es y confirmando."""
     id_libro = pedir_entero_opcional("Id del libro a eliminar (Enter para cancelar): ")
     if id_libro is None:
-        print("Eliminacion cancelada.")
+        print("Eliminación cancelada.")
         return
     libro = buscar_por_id(catalogo, id_libro)
     if libro is None:
-        print(f"No se encontro un libro con id {id_libro}.")
+        print(f"No se encontró un libro con id {id_libro}.")
         return
-    confirmar = input(f"Eliminar '{libro['titulo']}' (id {id_libro})? (s/n): ").strip().lower()
+    confirmar = input(f"Eliminar '{libro['título']}' (id {id_libro})? (s/n): ").strip().lower()
     if confirmar != "s":
-        print("Eliminacion cancelada.")
+        print("Eliminación cancelada.")
         return
     eliminar_libro(catalogo, id_libro)
 
@@ -136,73 +136,73 @@ def menu_modificar(catalogo: list) -> None:
     """Pide un id, muestra el libro y pide confirmacion antes de modificar. Se puede cancelar."""
     id_libro = pedir_entero_opcional("Id del libro a modificar (Enter para cancelar): ")
     if id_libro is None:
-        print("Modificacion cancelada.")
+        print("Modificación cancelada.")
         return
     libro = buscar_por_id(catalogo, id_libro)
     if libro is None:
-        print(f"No se encontro un libro con id {id_libro}.")
+        print(f"No se encontró un libro con id {id_libro}.")
         return
-    print(f"Libro: '{libro['titulo']}' - {libro['autor']} ({libro['genero']}, {libro['anio']})")
+    print(f"Libro: '{libro['título']}' - {libro['autor']} ({libro['género']}, {libro['año']})")
     confirmar = input("Es este el libro? (s/n): ").strip().lower()
     if confirmar != "s":
-        print("Modificacion cancelada.")
+        print("Modificación cancelada.")
         return
     print(f"Campos disponibles: {', '.join(CAMPOS)}")
     campo = input("Campo a modificar (Enter para cancelar): ").strip().lower()
     if campo == "":
-        print("Modificacion cancelada.")
+        print("Modificación cancelada.")
         return
     if campo not in CAMPOS:
         print("Campo invalido.")
         return
-    if campo in ("anio", "paginas", "stock"):
+    if campo in ("año", "páginas", "stock"):
         valor = pedir_entero_opcional(f"Nuevo valor para {campo} (Enter para cancelar): ")
-    elif campo in ("precio", "calificacion"):
+    elif campo in ("precio", "calificación"):
         valor = pedir_decimal_opcional(f"Nuevo valor para {campo} (Enter para cancelar): ")
     else:
         valor = input(f"Nuevo valor para {campo} (Enter para cancelar): ")
         if valor == "":
-            print("Modificacion cancelada.")
+            print("Modificación cancelada.")
             return
     if valor is None:
-        print("Modificacion cancelada.")
+        print("Modificación cancelada.")
         return
     modificar_libro(catalogo, id_libro, campo, valor)
 
 
 def main() -> None:
-    """Bucle principal del menu de la aplicacion."""
+    """Bucle principal del menu de la aplicación."""
     catalogo = cargar_catalogo(ARCHIVO_DATOS)
 
     while True:
         print("\n=== Catalogo de libros ===")
         print("1. Ver catalogo")
         print("2. Agregar libro")
-        print("3. Buscar por genero")
+        print("3. Buscar por género")
         print("4. Buscar por autor")
-        print("5. Filtrar por anio")
+        print("5. Filtrar por año")
         print("6. Ver indicadores")
         print("7. Generar grafico")
         print("8. Eliminar libro")
         print("9. Modificar libro")
         print("10. Guardar y salir")
 
-        opcion = input("Elegir opcion: ").strip()
+        opcion = input("Elegir opción: ").strip()
 
         if opcion == "1":
             mostrar_catalogo(catalogo)
         elif opcion == "2":
             menu_agregar(catalogo)
         elif opcion == "3":
-            genero = input("Genero a buscar: ")
-            mostrar_catalogo(buscar_por_genero(catalogo, genero))
+            género = input("Género a buscar: ")
+            mostrar_catalogo(buscar_por_género(catalogo, género))
         elif opcion == "4":
             autor = input("Autor a buscar: ")
             mostrar_catalogo(buscar_por_autor(catalogo, autor))
         elif opcion == "5":
-            anio_min = pedir_entero("Anio minimo: ")
-            anio_max = pedir_entero("Anio maximo: ")
-            mostrar_catalogo(filtrar_por_anio(catalogo, anio_min, anio_max))
+            año_min = pedir_entero("Año mínimo: ")
+            año_max = pedir_entero("Año máximo: ")
+            mostrar_catalogo(filtrar_por_año(catalogo, año_min, año_max))
         elif opcion == "6":
             menu_indicadores(catalogo)
         elif opcion == "7":
@@ -216,7 +216,7 @@ def main() -> None:
             print("Catalogo guardado. Hasta luego.")
             break
         else:
-            print("Opcion invalida. Intente de nuevo.")
+            print("Opción inválida. Intente de nuevo.")
 
 
 if __name__ == "__main__":
