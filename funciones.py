@@ -1,27 +1,30 @@
-"""Funciones reutilizables para la gestion del catalogo de libros.
-
-Este modulo separa la logica de negocio (carga, validacion, busqueda,
-indicadores y graficos) de la ejecucion principal que vive en main.py.
-"""
-
-from __future__ import annotations
+# Funciones reutilizables para la gestion del catalogo de libros.
 
 import json
-from datetime import datetime
+import os
+import sys
+from contextlib import suppress
+from datetime import date
 from typing import Any
 
 ARCHIVO_DATOS = "datos.json"
 ARCHIVO_GRAFICO = "libros_por_genero.png"
-
 CAMPOS = ["título", "autor", "género", "año", "precio", "calificación", "páginas", "stock"]
+CAMPOS_ENTEROS = {"año", "páginas", "stock"}
+CAMPOS_DECIMALES = {"precio", "calificación"}
 
+# Fuerza UTF-8 para que los acentos se lean y muestren bien en la consola.
+def configurar_utf8() -> None:
+    
+    if os.name == "nt":
+        os.system("chcp 65001 > nul")
+    for flujo in (sys.stdin, sys.stdout, sys.stderr):
+        with suppress(AttributeError, ValueError):
+            flujo.reconfigure(encoding="utf-8")
 
+# Lee el catalogo desde un JSON y devuelve una lista de diccionarios.
 def cargar_catalogo(archivo: str) -> list[dict[str, Any]]:
-    """Lee el catalogo desde un JSON y devuelve una lista de diccionarios.
 
-    Si algun libro no tiene id, se le asigna uno automaticamente. Si el
-    archivo no existe o no es valido, devuelve una lista vacia.
-    """
     try:
         with open(archivo, encoding="utf-8") as archivo_json:
             datos = json.load(archivo_json)
@@ -35,37 +38,33 @@ def cargar_catalogo(archivo: str) -> list[dict[str, Any]]:
         print(f"Error al leer '{archivo}': JSON invalido ({error}).")
     return []
 
-
+# Asigna ids unicos a los libros que no los tengan.
 def _completar_ids(datos: list[Any]) -> list[dict[str, Any]]:
-    """Asigna ids unicos a los libros que no los tengan."""
+
     catalogo: list[dict[str, Any]] = []
-    ids_presentes = [
-        libro["id"] for libro in datos
-        if isinstance(libro, dict) and isinstance(libro.get("id"), int)
-    ]
-    siguiente = (max(ids_presentes) + 1) if ids_presentes else 1
+
     for libro in datos:
         if not isinstance(libro, dict):
             continue
-        if not isinstance(libro.get("id"), int):
-            libro["id"] = siguiente
-            siguiente += 1
         catalogo.append(libro)
+    # Se renumera siempre para que la lista quede correlativa (1, 2, 3...),
+    # incluso si el archivo tenia ids faltantes o con huecos.
+    renumerar(catalogo)
     return catalogo
 
-
+# Guarda el catalogo en un archivo JSON con formato legible.
 def guardar_catalogo(catalogo: list[dict[str, Any]], archivo: str) -> None:
-    """Guarda el catalogo en un archivo JSON con formato legible."""
+
     try:
         with open(archivo, "w", encoding="utf-8") as archivo_json:
             json.dump(catalogo, archivo_json, ensure_ascii=False, indent=2)
     except OSError as error:
         print(f"Error al guardar en '{archivo}': {error}")
 
-
+# Valida los datos de un libro y lanza ValueError si algo no es correcto.
 def validar_libro(libro: dict[str, Any]) -> None:
-    """Valida los datos de un libro y lanza ValueError si algo no es correcto."""
-    año_actual = datetime.now().year
+
+    año_actual = date.today().year
 
     if not str(libro["título"]).strip():
         raise ValueError("El título no puede estar vacio.")
@@ -109,16 +108,19 @@ def validar_libro(libro: dict[str, Any]) -> None:
     if stock < 0:
         raise ValueError("El stock no puede ser negativo.")
 
+# Reasigna los ids del catalogo como 1, 2, 3... segun el orden de la lista.
+# Se usa cada vez que el catalogo cambia (agregar o eliminar) para que la
+# numeracion quede siempre correlativa y sin huecos.
+def renumerar(catalogo: list[dict[str, Any]]) -> None:
+    for posicion, libro in enumerate(catalogo, start=1):
+        libro["id"] = posicion
 
+# Devuelve el proximo id disponible para un nuevo libro.
 def siguiente_id(catalogo: list[dict[str, Any]]) -> int:
-    """Devuelve el proximo id disponible para un nuevo libro."""
-    if not catalogo:
-        return 1
-    return max(libro.get("id", 0) for libro in catalogo) + 1
+    return len(catalogo) + 1
 
-
+# Valida y agrega un libro al catalogo, asignandole un id unico.
 def agregar_libro(catalogo: list[dict[str, Any]], libro: dict[str, Any]) -> None:
-    """Valida y agrega un libro al catalogo, asignandole un id unico."""
     libro_limpio = {
         "id": siguiente_id(catalogo),
         "título": str(libro["título"]).strip(),
@@ -130,27 +132,29 @@ def agregar_libro(catalogo: list[dict[str, Any]], libro: dict[str, Any]) -> None
         "páginas": int(libro["páginas"]),
         "stock": int(libro["stock"]),
     }
+
     try:
         validar_libro(libro_limpio)
     except ValueError as error:
         print(f"Libro no agregado: {error}")
         return
     catalogo.append(libro_limpio)
+    renumerar(catalogo)
     print(f"Libro '{libro_limpio['título']}' agregado con id {libro_limpio['id']}.")
 
-
+# Elimina del catalogo el libro con el id indicado.
 def eliminar_libro(catalogo: list[dict[str, Any]], id_libro: int) -> None:
-    """Elimina del catalogo el libro con el id indicado."""
+
     for i, libro in enumerate(catalogo):
         if libro.get("id") == id_libro:
             eliminado = catalogo.pop(i)
             print(f"Libro '{eliminado['título']}' (id {eliminado['id']}) eliminado.")
+            renumerar(catalogo)
             return
     print(f"No se encontro un libro con id {id_libro}.")
 
-
+# Modifica un campo del libro indicado, validando que el resultado siga siendo valido.
 def modificar_libro(catalogo: list[dict[str, Any]], id_libro: int, campo: str, valor: Any) -> None:
-    """Modifica un campo del libro indicado, validando que el resultado siga siendo valido."""
     if campo not in CAMPOS:
         print(f"Campo invalido. Campos disponibles: {', '.join(CAMPOS)}.")
         return
@@ -169,34 +173,31 @@ def modificar_libro(catalogo: list[dict[str, Any]], id_libro: int, campo: str, v
             return
     print(f"No se encontro un libro con id {id_libro}.")
 
-
+#Devuelve el libro con el id indicado, o None si no existe.
 def buscar_por_id(catalogo: list[dict[str, Any]], id_libro: int) -> dict[str, Any] | None:
-    """Devuelve el libro con el id indicado, o None si no existe."""
+
     for libro in catalogo:
         if libro.get("id") == id_libro:
             return libro
     return None
 
-
+# Devuelve los libros cuyo género coincide (sin distinguir mayúsculas).
 def buscar_por_género(catalogo: list[dict[str, Any]], género: str) -> list[dict[str, Any]]:
-    """Devuelve los libros cuyo género coincide (sin distinguir mayúsculas)."""
     género = género.strip().lower()
     return [libro for libro in catalogo if libro["género"].lower() == género]
 
-
+# Devuelve los libros cuyo autor contiene el texto buscado.
 def buscar_por_autor(catalogo: list[dict[str, Any]], autor: str) -> list[dict[str, Any]]:
-    """Devuelve los libros cuyo autor contiene el texto buscado."""
     autor = autor.strip().lower()
     return [libro for libro in catalogo if autor in libro["autor"].lower()]
 
-
+ # Devuelve los libros publicados dentro del rango de años.
 def filtrar_por_año(catalogo: list[dict[str, Any]], año_min: int, año_max: int) -> list[dict[str, Any]]:
-    """Devuelve los libros publicados dentro del rango de años."""
     return [libro for libro in catalogo if año_min <= libro["año"] <= año_max]
 
-
+# Calcula indicadores utiles sobre el catalogo.
 def calcular_indicadores(catalogo: list[dict[str, Any]]) -> dict[str, Any]:
-    """Calcula indicadores utiles sobre el catalogo."""
+
     if not catalogo:
         return {}
 
@@ -218,9 +219,9 @@ def calcular_indicadores(catalogo: list[dict[str, Any]]) -> dict[str, Any]:
         "libros_por_género": libros_por_género,
     }
 
-
+# Genera un grafico de barras con la cantidad de libros por genero.
 def generar_grafico(catalogo: list[dict[str, Any]], archivo_salida: str) -> None:
-    """Genera un grafico de barras con la cantidad de libros por genero."""
+
     import matplotlib.pyplot as plt
 
     if not catalogo:
@@ -242,14 +243,15 @@ def generar_grafico(catalogo: list[dict[str, Any]], archivo_salida: str) -> None
     plt.close()
     print(f"Grafico guardado en '{archivo_salida}'.")
 
-
+#Imprime el catalogo en formato de tabla simple.
 def mostrar_catalogo(catalogo: list[dict[str, Any]]) -> None:
-    """Imprime el catalogo en formato de tabla simple."""
+
     if not catalogo:
         print("El catalogo esta vacio.")
         return
     print(f"\n{'Id':>3} {'Titulo':<28} {'Autor':<24} {'Genero':<16} {'Año':>5} {'Precio':>8} {'Calif.':>6} {'Stock':>5}")
     print("-" * 108)
+
     for libro in catalogo:
         print(
             f"{libro['id']:>3} {libro['título']:<28} {libro['autor']:<24} {libro['género']:<16} "

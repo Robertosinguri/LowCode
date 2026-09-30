@@ -1,0 +1,29 @@
+# Bytecode de Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Entornos virtuales
+.venv/
+venv/
+env/
+ENV/
+
+# Herramientas de empaquetado / testing
+build/
+dist/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+# Editores
+.idea/
+*.swp
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# Salidas del programa
+libros_por_genero.png
+

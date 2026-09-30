@@ -16,16 +16,70 @@ cumpliendo la consigna del TP1 (Elementos de Programacion IA y Low Code).
 
 ## Instalacion
 
-Crear y activar un entorno virtual e instalar dependencias:
+La instalacion tiene tres etapas. Crear el entorno virtual se hace **una sola
+vez**; activarlo se hace **cada vez** que se abre una terminal nueva para
+trabajar en el proyecto.
+
+### Etapa 1: crear el entorno virtual
+
+Desde la carpeta del proyecto, el comando es igual en todos los sistemas:
 
 ```bash
 python -m venv .venv
-.venv/Scripts/activate        # Windows
-# source .venv/bin/activate   # Linux/macOS
+```
+
+Esto crea una carpeta `.venv/` con una copia aislada de Python y sus
+herramientas. No hace falta repetir este paso salvo que se borre la carpeta.
+
+### Etapa 2: activar el entorno virtual
+
+El comando de activacion **depende de la terminal** que se use. Hay que
+ejecutar el que corresponda, siempre desde la carpeta del proyecto:
+
+**Windows - CMD (simbolo del sistema):**
+
+```bat
+.venv\Scripts\activate.bat
+```
+
+**Windows - PowerShell:**
+
+```powershell
+.venv\Scripts\Activate.ps1
+```
+
+> Si PowerShell bloquea el script con un error de "politica de ejecucion",
+> ejecutar una vez:
+> `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`
+
+**Windows - Git Bash:**
+
+```bash
+source .venv/Scripts/activate
+```
+
+**Linux / macOS:**
+
+```bash
+source .venv/bin/activate
+```
+
+Cuando la activacion funciona, el nombre del entorno aparece al inicio del
+prompt, por ejemplo: `(.venv) C:\...\LowCode>`.
+
+### Etapa 3: instalar las dependencias
+
+Con el entorno ya activado (y solo entonces), instalar las dependencias:
+
+```bash
 pip install -r requirements.txt
 ```
 
+Para salir del entorno virtual, ejecutar `deactivate`.
+
 ## Ejecucion
+
+Con el entorno activado y las dependencias instaladas:
 
 ```bash
 python main.py
