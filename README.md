@@ -91,9 +91,9 @@ El menu permite:
 2. Agregar un libro (con validacion de datos).
 3. Buscar por genero.
 4. Buscar por autor.
-5. Filtrar por anio.
+5. Filtrar por año.
 6. Ver indicadores.
-7. Generar un grafico (se guarda como `libros_por_genero.png`).
+7. Generar un gráfico (se guarda como `libros_por_genero.png`).
 8. Eliminar un libro.
 9. Modificar un libro.
 10. Guardar y salir.
@@ -109,7 +109,7 @@ La notebook `analisis.ipynb` explora los datos con pandas y produce graficos.
 | `main.py`    | Flujo principal y menu interactivo.          |
 | `funciones.py` | Funciones reutilizables (carga, validacion, busqueda, indicadores, grafico). |
 | `datos.json` | Catalogo de libros inicial.                  |
-| `analisis.ipynb` | Exploracion con pandas y graficos.        |
+| `analisis.ipynb` | Exploracion con pandas y gráficos.        |
 | `requirements.txt` | Dependencias externas.                |
 
 ## Decisiones principales
@@ -118,4 +118,4 @@ La notebook `analisis.ipynb` explora los datos con pandas y produce graficos.
 - El nucleo de la app usa **listas y diccionarios**; **pandas** se usa en el
   analisis (notebook), como pide la consigna.
 - Validacion de cada campo con `try`/`except` y `ValueError` para datos invalidos.
-- El grafico principal muestra la cantidad de libros por genero.
+- El gráfico principal muestra la cantidad de libros por genero.
