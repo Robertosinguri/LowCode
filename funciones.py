@@ -61,52 +61,59 @@ def guardar_catalogo(catalogo: list[dict[str, Any]], archivo: str) -> None:
     except OSError as error:
         print(f"Error al guardar en '{archivo}': {error}")
 
-# Valida los datos de un libro y lanza ValueError si algo no es correcto.
-def validar_libro(libro: dict[str, Any]) -> None:
+# Valida los datos de un libro, devuelve una version limpia y lanza ValueError si algo no es correcto.
+def validar_libro(libro: dict[str, Any]) -> dict[str, Any]:
 
     año_actual = date.today().year
+    libro_limpio: dict[str, Any] = {}
 
-    if not str(libro["título"]).strip():
-        raise ValueError("El título no puede estar vacio.")
-    if not str(libro["autor"]).strip():
-        raise ValueError("El autor no puede estar vacio.")
-    if not str(libro["género"]).strip():
-        raise ValueError("El género no puede estar vacio.")
+    for campo in ("título", "autor", "género"):
+        valor = str(libro.get(campo, "")).strip()
+        if not valor:
+            raise ValueError(f"El {campo} no puede estar vacio.")
+        libro_limpio[campo] = valor
 
     try:
         año = int(libro["año"])
-    except (ValueError, TypeError):
+    except (ValueError, TypeError, KeyError):
         raise ValueError("El año debe ser un numero entero.")
     if año < 1000 or año > año_actual:
         raise ValueError(f"El año debe estar entre 1000 y {año_actual}.")
+    libro_limpio["año"] = año
 
     try:
         precio = float(libro["precio"])
-    except (ValueError, TypeError):
+    except (ValueError, TypeError, KeyError):
         raise ValueError("El precio debe ser un numero.")
     if precio < 0:
         raise ValueError("El precio no puede ser negativo.")
+    libro_limpio["precio"] = precio
 
     try:
         calificación = float(libro["calificación"])
-    except (ValueError, TypeError):
+    except (ValueError, TypeError, KeyError):
         raise ValueError("La calificación debe ser un numero.")
     if not 0 <= calificación <= 5:
         raise ValueError("La calificación debe estar entre 0 y 5.")
+    libro_limpio["calificación"] = calificación
 
     try:
         páginas = int(libro["páginas"])
-    except (ValueError, TypeError):
+    except (ValueError, TypeError, KeyError):
         raise ValueError("Las páginas deben ser un numero entero.")
     if páginas <= 0:
         raise ValueError("Las páginas deben ser un numero positivo.")
+    libro_limpio["páginas"] = páginas
 
     try:
         stock = int(libro["stock"])
-    except (ValueError, TypeError):
+    except (ValueError, TypeError, KeyError):
         raise ValueError("El stock debe ser un numero entero.")
     if stock < 0:
         raise ValueError("El stock no puede ser negativo.")
+    libro_limpio["stock"] = stock
+
+    return libro_limpio
 
 # Reasigna los ids del catalogo como 1, 2, 3... segun el orden de la lista.
 # Se usa cada vez que el catalogo cambia (agregar o eliminar) para que la
@@ -121,23 +128,13 @@ def siguiente_id(catalogo: list[dict[str, Any]]) -> int:
 
 # Valida y agrega un libro al catalogo, asignandole un id unico.
 def agregar_libro(catalogo: list[dict[str, Any]], libro: dict[str, Any]) -> None:
-    libro_limpio = {
-        "id": siguiente_id(catalogo),
-        "título": str(libro["título"]).strip(),
-        "autor": str(libro["autor"]).strip(),
-        "género": str(libro["género"]).strip(),
-        "año": int(libro["año"]),
-        "precio": float(libro["precio"]),
-        "calificación": float(libro["calificación"]),
-        "páginas": int(libro["páginas"]),
-        "stock": int(libro["stock"]),
-    }
-
     try:
-        validar_libro(libro_limpio)
+        libro_limpio = validar_libro(libro)
     except ValueError as error:
         print(f"Libro no agregado: {error}")
         return
+
+    libro_limpio["id"] = siguiente_id(catalogo)
     catalogo.append(libro_limpio)
     renumerar(catalogo)
     print(f"Libro '{libro_limpio['título']}' agregado con id {libro_limpio['id']}.")
@@ -164,11 +161,11 @@ def modificar_libro(catalogo: list[dict[str, Any]], id_libro: int, campo: str, v
             copia = dict(libro)
             copia[campo] = valor
             try:
-                validar_libro(copia)
+                copia_limpia = validar_libro(copia)
             except ValueError as error:
                 print(f"No se modifico: {error}")
                 return
-            libro[campo] = valor
+            libro[campo] = copia_limpia[campo]
             print(f"Libro '{libro['título']}' (id {libro['id']}) actualizado ({campo} = {valor}).")
             return
     print(f"No se encontro un libro con id {id_libro}.")
