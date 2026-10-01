@@ -1,6 +1,6 @@
 # Ejecucion principal de la aplicacion de catalogo de libros.
 
-from typing import Any, Callable, TypeVar
+from typing import Any, Callable
 
 from funciones import (
     ARCHIVO_DATOS,
@@ -23,13 +23,15 @@ from funciones import (
     mostrar_catalogo,
 )
 
-T = TypeVar("T", int, float)
+# Palabra que el usuario escribe para abortar una operacion.
+CANCELAR = "cancelar"
 
-# Palabra que el usuario escribe para abortar una carga de datos.
-PALABRA_CANCELAR = "cancelar"
-
-# Sufijo que se agrega a los mensajes para indicar como cancelar.
-SUFIJO_CANCELAR = f" (o escriba '{PALABRA_CANCELAR}')"
+# Formatea el mensaje de solicitud informando como cancelar.
+def _formatear_prompt(mensaje: str, opcional: bool) -> str:
+    base = mensaje.rstrip(": ")
+    if opcional:
+        return f"{base} (Enter o '{CANCELAR}'): "
+    return f"{base} (o escriba '{CANCELAR}'): "
 
 # Se lanza cuando el usuario decide abortar una carga en curso.
 class CargaCancelada(Exception):
@@ -44,18 +46,19 @@ def confirmar_cancelacion(
 # Pide un numero al usuario, repitiendo hasta que sea valido.
 def pedir_numero(
     mensaje: str,
-    tipo: type[T],
+    tipo: type,
     opcional: bool = False,
     mensaje_confirmacion: str | None = None,
-) -> T | None:
+) -> int | float | None:
 
     if tipo is int:
         aviso = "Entrada inválida: ingrese un número entero."
     else:
         aviso = "Entrada inválida: ingrese un número."
+    prompt = _formatear_prompt(mensaje, opcional)
     while True:
-        entrada = input(mensaje).strip()
-        if entrada.lower() == PALABRA_CANCELAR:
+        entrada = input(prompt).strip()
+        if entrada.lower() == CANCELAR:
             if mensaje_confirmacion is None:
                 confirmado = confirmar_cancelacion()
             else:
@@ -76,9 +79,10 @@ def pedir_texto(
     opcional: bool = False,
     mensaje_confirmacion: str | None = None,
 ) -> str | None:
+    prompt = _formatear_prompt(mensaje, opcional)
     while True:
-        valor = input(mensaje).strip()
-        if valor.lower() == PALABRA_CANCELAR:
+        valor = input(prompt).strip()
+        if valor.lower() == CANCELAR:
             if mensaje_confirmacion is None:
                 confirmado = confirmar_cancelacion()
             else:
@@ -95,14 +99,14 @@ def menu_agregar(catalogo: list[dict[str, Any]]) -> None:
 
     print("\n--- Agregar libro ---")
     try:
-        título = pedir_texto(f"Título{SUFIJO_CANCELAR}: ")
-        autor = pedir_texto(f"Autor{SUFIJO_CANCELAR}: ")
-        género = pedir_texto(f"Género{SUFIJO_CANCELAR}: ")
-        año = pedir_numero(f"Año de publicación{SUFIJO_CANCELAR}: ", int)
-        precio = pedir_numero(f"Precio{SUFIJO_CANCELAR}: ", float)
-        calificación = pedir_numero(f"Calificación (0 a 5){SUFIJO_CANCELAR}: ", float)
-        páginas = pedir_numero(f"Cantidad de páginas{SUFIJO_CANCELAR}: ", int)
-        stock = pedir_numero(f"Stock{SUFIJO_CANCELAR}: ", int)
+        título = pedir_texto("Título")
+        autor = pedir_texto("Autor")
+        género = pedir_texto("Género")
+        año = pedir_numero("Año de publicación", int)
+        precio = pedir_numero("Precio", float)
+        calificación = pedir_numero("Calificación (0 a 5)", float)
+        páginas = pedir_numero("Cantidad de páginas", int)
+        stock = pedir_numero("Stock", int)
     except CargaCancelada:
         print("Carga cancelada. No se agregó ningún libro.")
         return
@@ -130,12 +134,12 @@ def menu_buscar_autor(catalogo: list[dict[str, Any]]) -> None:
 
 # Pide un rango de años y muestra los libros publicados dentro de el.
 def menu_filtrar_año(catalogo: list[dict[str, Any]]) -> None:
-    año_min = pedir_numero(f"Año mínimo (Enter o '{PALABRA_CANCELAR}'): ", int, opcional=True)
+    año_min = pedir_numero("Año mínimo", int, opcional=True)
 
     if año_min is None:
         print("Filtro cancelado.")
         return
-    año_max = pedir_numero(f"Año máximo (Enter o '{PALABRA_CANCELAR}'): ", int, opcional=True)
+    año_max = pedir_numero("Año máximo", int, opcional=True)
 
     if año_max is None:
         print("Filtro cancelado.")
@@ -166,7 +170,7 @@ def menu_generar_grafico(catalogo: list[dict[str, Any]]) -> None:
 
 # Pide un id y elimina el libro correspondiente, mostrando cual es y confirmando.
 def menu_eliminar(catalogo: list[dict[str, Any]]) -> None:
-    id_libro = pedir_numero(f"Id del libro a eliminar (Enter o '{PALABRA_CANCELAR}'): ", int, opcional=True)
+    id_libro = pedir_numero("Id del libro a eliminar", int, opcional=True)
 
     if id_libro is None:
         print("Eliminación cancelada.")
@@ -183,7 +187,7 @@ def menu_eliminar(catalogo: list[dict[str, Any]]) -> None:
         if confirmar == "n":
             print("No se eliminó el libro.")
             return
-        if confirmar == PALABRA_CANCELAR:
+        if confirmar == CANCELAR:
             if confirmar_cancelacion("¿Abortar la eliminación? (s/n): "):
                 print("Eliminación cancelada.")
                 return
@@ -193,7 +197,7 @@ def menu_eliminar(catalogo: list[dict[str, Any]]) -> None:
 
 # Pide un id, muestra el libro y pide confirmacion antes de modificar. Se puede cancelar.
 def menu_modificar(catalogo: list[dict[str, Any]]) -> None:
-    id_libro = pedir_numero(f"Id del libro a modificar (Enter o '{PALABRA_CANCELAR}'): ", int, opcional=True)
+    id_libro = pedir_numero("Id del libro a modificar", int, opcional=True)
 
     if id_libro is None:
         print("Modificación cancelada.")
@@ -211,7 +215,7 @@ def menu_modificar(catalogo: list[dict[str, Any]]) -> None:
         if confirmar == "n":
             print("No se modificó el libro.")
             return
-        if confirmar == PALABRA_CANCELAR:
+        if confirmar == CANCELAR:
             if confirmar_cancelacion("¿Abortar la modificación? (s/n): "):
                 print("Modificación cancelada.")
                 return
@@ -219,11 +223,11 @@ def menu_modificar(catalogo: list[dict[str, Any]]) -> None:
         print("Responda 's' para continuar, 'n' para no modificar.")
     print(f"Campos disponibles: {', '.join(CAMPOS)}")
     while True:
-        campo = input(f"Campo a modificar (Enter o '{PALABRA_CANCELAR}'): ").strip().lower()
+        campo = input(f"Campo a modificar (Enter o '{CANCELAR}'): ").strip().lower()
         if campo == "":
             print("Modificación cancelada.")
             return
-        if campo == PALABRA_CANCELAR:
+        if campo == CANCELAR:
             if confirmar_cancelacion("¿Abortar la modificación? (s/n): "):
                 print("Modificación cancelada.")
                 return
@@ -232,7 +236,7 @@ def menu_modificar(catalogo: list[dict[str, Any]]) -> None:
             print(f"Campo invalido. Elija uno de: {', '.join(CAMPOS)}.")
             continue
         break
-    mensaje = f"Nuevo valor para {campo} (Enter o '{PALABRA_CANCELAR}'): "
+    mensaje = f"Nuevo valor para {campo}"
     confirmacion = f"¿Cancelar el cambio de '{campo}'? (s/n): "
 
     try:

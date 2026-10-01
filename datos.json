@@ -174,5 +174,16 @@
     "calificación": 4.0,
     "páginas": 120,
     "stock": 3
+  },
+  {
+    "título": "los objetos singulares",
+    "autor": "Jean Baudrillard",
+    "género": "Arquitectura",
+    "año": 2002,
+    "precio": 8000.0,
+    "calificación": 4.0,
+    "páginas": 125,
+    "stock": 4,
+    "id": 17
   }
 ]
