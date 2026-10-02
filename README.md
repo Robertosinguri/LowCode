@@ -98,10 +98,6 @@ El menu permite:
 9. Modificar un libro.
 10. Guardar y salir.
 
-## Analisis
-
-La notebook `analisis.ipynb` explora los datos con pandas y produce graficos.
-
 ## Estructura del proyecto
 
 | Archivo      | Contenido                                    |
