@@ -105,7 +105,6 @@ El menu permite:
 | `main.py`    | Flujo principal y menu interactivo.          |
 | `funciones.py` | Funciones reutilizables (carga, validacion, busqueda, indicadores, grafico). |
 | `datos.json` | Catalogo de libros inicial.                  |
-| `analisis.ipynb` | Exploracion con pandas y gráficos.        |
 | `requirements.txt` | Dependencias externas.                |
 
 ## Decisiones principales
