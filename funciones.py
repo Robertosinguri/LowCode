@@ -246,13 +246,19 @@ def mostrar_catalogo(catalogo: list[dict[str, Any]]) -> None:
     if not catalogo:
         print("El catalogo esta vacio.")
         return
-    print(f"\n{'Id':>3} {'Titulo':<28} {'Autor':<24} {'Genero':<16} {'Año':>5} {'Precio':>8} {'Calif.':>6} {'Stock':>5}")
-    print("-" * 108)
+    encabezado = (
+        f"{'Id':>3} {'Titulo':<28} {'Autor':<24} {'Genero':<16} "
+        f"{'Año':>5} {'Precio':>8} {'Calif.':>6} {'Stock':>5}"
+    )
+    ancho = len(encabezado)
+
+    print(f"\n{encabezado}")
+    print("-" * ancho)
 
     for libro in catalogo:
         print(
             f"{libro['id']:>3} {libro['título']:<28} {libro['autor']:<24} {libro['género']:<16} "
             f"{libro['año']:>5} {libro['precio']:>8.0f} {libro['calificación']:>6.1f} {libro['stock']:>5}"
         )
-    print("-" * 108)
+    print("-" * ancho)
     print(f"Total: {len(catalogo)} libros\n")
